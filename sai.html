@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>اختبار المناهج - سعيد مسعد</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap');
+        body { font-family: 'Tajawal', sans-serif; background-color: #1a1a1a; color: white; scroll-behavior: smooth; position: relative; }
+        
+        /* تصميم العلامة المائية */
+        .watermark {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* لكي لا تمنع الضغط على الأزرار */
+            z-index: 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            align-content: space-around;
+            opacity: 0.05; /* درجة الشفافية - خفيفة جداً حتى لا تعيق القراءة */
+            user-select: none;
+        }
+        .watermark span {
+            font-size: 50px;
+            font-weight: 900;
+            transform: rotate(-30deg);
+            white-space: nowrap;
+            margin: 100px;
+        }
+
+        .geometric-accent { clip-path: polygon(0 0, 100% 0, 100% 15%, 0 40%); }
+        .question-box { background: rgba(38, 38, 38, 0.8); border-right: 4px solid #FFB74D; border-radius: 8px; padding: 18px; margin-bottom: 15px; position: relative; z-index: 10; }
+        .option-btn { width: 100%; text-align: right; padding: 12px; margin: 5px 0; border-radius: 6px; background: #333; border: 1px solid #444; transition: 0.2s; cursor: pointer; }
+        .option-btn:hover:not(:disabled) { border-color: #FFB74D; background: #444; }
+        .correct { background-color: #059669 !important; border-color: #10B981 !important; }
+        .wrong { background-color: #DC2626 !important; border-color: #EF4444 !important; }
+        .hidden { display: none; }
+        #result-screen { background: rgba(0,0,0,0.95); position: fixed; inset: 0; z-index: 2000; display: none; align-items: center; justify-content: center; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div class="watermark">
+        <span>سعيد مسعد</span>
+        <span>سعيد مسعد</span>
+        <span>سعيد مسعد</span>
+        <span>سعيد مسعد</span>
+        <span>سعيد مسعد</span>
+        <span>سعيد مسعد</span>
+        <span>سعيد مسعد</span>
+        <span>سعيد مسعد</span>
+        <span>سعيد مسعد</span>
+    </div>
+
+    <div id="result-screen">
+        <div class="bg-[#262626] p-10 rounded-2xl border-2 border-[#FFB74D] max-w-lg w-full mx-4 shadow-2xl">
+            <h2 class="text-3xl font-bold mb-2">انتهى الاختبار</h2>
+            <p class="text-xl mb-2 text-gray-300">الطالب: <span id="display-name" class="text-[#FFB74D]"></span></p>
+            <div class="text-6xl font-black my-6 text-white bg-[#8B0000] py-4 rounded-xl shadow-inner"><span id="final-score">0</span> / 400</div>
+            <button onclick="location.reload()" class="bg-[#FFB74D] text-black px-10 py-3 rounded-full font-bold">إعادة الاختبار</button>
+            <p class="mt-4 text-xs text-gray-500 italic">تصميم: سعيد مسعد</p>
+        </div>
+    </div>
+
+    <div id="registration-screen" class="w-full h-screen flex items-center justify-center relative overflow-hidden">
+        <div class="geometric-accent absolute top-0 right-0 w-full min-h-[200px] bg-[#8B0000] opacity-80"></div>
+        <div class="z-10 text-center bg-[#262626] p-10 rounded-2xl shadow-2xl border-t-4 border-[#FFB74D] w-full max-w-md mx-4">
+            <h1 class="text-4xl font-black mb-4">اختبار المناهج</h1>
+            <p class="mb-4 text-gray-400">إعداد وتنفيذ: سعيد مسعد</p>
+            <input type="text" id="user-name" placeholder="أدخل اسمك" class="w-full p-4 bg-gray-800 rounded-lg text-white border border-gray-600 focus:border-[#FFB74D] outline-none text-center text-xl mb-6">
+            <button onclick="startExam()" class="bg-[#8B0000] w-full py-4 rounded-lg font-bold text-xl hover:scale-105 transition shadow-lg">ابدأ الامتحان</button>
+        </div>
+    </div>
+
+    <div id="exam-content" class="max-w-6xl mx-auto py-16 px-6 hidden relative z-10">
+        <div class="flex justify-between items-center mb-10 sticky top-4 z-50 bg-[#1a1a1a]/95 p-5 rounded-xl border border-[#FFB74D] shadow-2xl">
+            <h2 class="text-xl font-bold">الطالب: <span id="student-name"></span></h2>
+            <div class="text-xl font-bold bg-[#8B0000] px-5 py-1 rounded-full border border-[#FFB74D]">الدرجة: <span id="live-score">0</span></div>
+        </div>
+
+        <div id="mcq-container"></div>
+        <div id="tf-container"></div>
+        <div id="essay-container"></div>
+
+        <button onclick="finishExam()" class="w-full bg-[#059669] py-6 rounded-xl font-black text-2xl hover:bg-[#047857] transition shadow-2xl mb-20">إنهاء الاختبار</button>
+    </div>
+
+    <script>
+        // مصفوفات الأسئلة كما هي في الأكواد السابقة
+        const mcqs = [
+            { q: "المفهوم التقليدي للمنهج يركز على:", opts: ["الخبرات", "المادة الدراسية", "الأنشطة", "المتعلم"], c: 1 },
+            { q: "الفلسفة التي تؤكد أن الحقائق ثابتة ولا تتغير هي:", opts: ["البراجماتية", "المثالية", "الواقعية", "الإسلامية"], c: 1 },
+            { q: "أول خطوة في بناء المنهج هي تحديد:", opts: ["المحتوى", "الوسائل", "الأهداف", "التقويم"], c: 2 },
+            { q: "من معايير اختيار المحتوى (الصدق) ويعني:", opts: ["موافقة ميول الطلاب", "صحة المادة علمياً", "سهولة التدريس", "ارتباطه بالبيئة"], c: 1 },
+            { q: "التقويم الذي يهدف لتشخيص نقاط القوة والضعف أثناء التدريس:", opts: ["القبلي", "البنائي", "الختامي", "التتبعي"], c: 1 },
+            { q: "المجال النفس حركي يركز على:", opts: ["القيم", "المعلومات", "المهارات اليدوية", "الوجدانيات"], c: 2 },
+            { q: "من عيوب منهج المواد المنفصلة:", opts: ["سهولة التنظيم", "تجزئة المعرفة", "وفرة المعلمين", "المنطقية"], c: 1 },
+            { q: "المنهج الذي يلغي الفواصل بين المواد تماماً هو:", opts: ["المواد المترابطة", "النشاط", "المجالات الواسعة", "الدمج"], c: 1 },
+            { q: "الأسس الاجتماعية للمنهج تركز على:", opts: ["سيكولوجية التعلم", "حاجات المجتمع", "الفلسفة التربوية", "نضج الطالب"], c: 1 },
+            { q: "تعد 'المناقشة' من:", opts: ["أدوات التقويم", "طرق التدريس", "عناصر المحتوى", "أسس المنهج"], c: 1 },
+            { q: "مستوى 'التحليل' في بلوم يتبع المجال:", opts: ["الوجداني", "المعرفي", "المهاري", "الاجتماعي"], c: 1 },
+            { q: "من خصائص المنهج الحديث أنه:", opts: ["ثابت", "مرن", "يهتم بالحفظ", "يركز على الكتاب فقط"], c: 1 },
+            { q: "المنهج الخفي يقصد به:", opts: ["المقرر الرسمي", "ما يتعلمه الطالب غير مخطط له", "الأنشطة الرياضية", "دروس التقوية"], c: 1 },
+            { q: "العلاقة بين عناصر المنهج هي علاقة:", opts: ["انفصال", "تكاملية تبادلية", "تضاد", "ترتيب زمني فقط"], c: 1 },
+            { q: "الاستمرارية في تنظيم المحتوى تعني:", opts: ["تكرار الخبرة بعمق أكبر", "ربط المادة بالواقع", "تنوع الأنشطة", "سهولة الاختبارات"], c: 0 },
+            { q: "أي الفلسفات ترى أن المدرسة صورة مصغرة للمجتمع؟", opts: ["المثالية", "البراجماتية", "الواقعية", "الوجودية"], c: 1 },
+            { q: "الهدف السلوكي الجيد يجب أن يكون:", opts: ["عاماً", "قابلاً للقياس", "طويلاً", "يركز على المعلم"], c: 1 },
+            { q: "من أدوات التقويم النوعية:", opts: ["الاختبار المقالي", "الملاحظة", "الاختبار الموضوعي", "التحصيل"], c: 1 },
+            { q: "تنظيم المنهج حول مشكلات الحياة يسمى:", opts: ["منهج المواد", "المنهج المحوري", "منهج النشاط", "المنهج الحلزوني"], c: 1 },
+            { q: "يُقصد بالوسائل التعليمية:", opts: ["أجهزة العرض فقط", "كل ما يستخدمه المعلم لتسهيل التعلم", "الكتب المدرسية", "السبورة"], c: 1 }
+        ];
+
+        const tfs = [
+            { q: "المنهج بمفهومه التقليدي مرادف للكتاب المدرسي.", c: 0 },
+            { q: "تركز الفلسفة البراجماتية على الجوانب النظرية أكثر من العملية.", c: 1 },
+            { q: "النمو عملية شاملة ومتكاملة بجميع جوانبها.", c: 0 },
+            { q: "منهج النشاط يضع المادة الدراسية فوق كل اعتبار.", c: 1 },
+            { q: "التقويم القبلي يساعد في توزيع الطلاب على المستويات المناسبة.", c: 0 },
+            { q: "يقتصر دور المعلم في المنهج الحديث على التلقين.", c: 1 },
+            { q: "الأهداف الوجدانية هي الأسهل في القياس والتقويم.", c: 1 },
+            { q: "التكامل بين المواد الدراسية يقلل من تكرار المعلومات.", c: 0 },
+            { q: "منهج المجالات الواسعة هو محاولة لتقليل عيوب المواد المنفصلة.", c: 0 },
+            { q: "البيئة المحلية لا تؤثر في بناء المنهج المدرسي.", c: 1 },
+            { q: "طريقة حل المشكلات تنمي مهارات التفكير الناقد.", c: 0 },
+            { q: "المنهج والبرنامج الدراسي هما شيء واحد تماماً.", c: 1 },
+            { q: "التوازن في المحتوى يعني الاهتمام بالكم على حساب الكيف.", c: 1 },
+            { q: "الفروق الفردية تتطلب تنوعاً في طرق التدريس والأنشطة.", c: 0 },
+            { q: "منهج الوحدات يربط بين الجانب النظري والتطبيقي.", c: 0 },
+            { q: "الاختبارات هي الوسيلة الوحيدة لتقويم الطالب.", c: 1 },
+            { q: "المتعلم في المنهج الحديث سلبي ومستقبل فقط.", c: 1 },
+            { q: "مراعاة الأسس النفسية تزيد من دافعية الطلاب للتعلم.", c: 0 },
+            { q: "يسمح المنهج الحديث للطالب بالمشاركة في التخطيط.", c: 0 },
+            { q: "المنهج المترابط يلغي الحدود تماماً بين المواد.", c: 1 }
+        ];
+
+        let score = 0;
+        let userName = "";
+
+        function startExam() {
+            userName = document.getElementById('user-name').value;
+            if (userName.trim() === "") return alert("برجاء إدخال اسمك");
+            document.getElementById('student-name').innerText = userName;
+            document.getElementById('display-name').innerText = userName;
+            document.getElementById('registration-screen').classList.add('hidden');
+            document.getElementById('exam-content').classList.remove('hidden');
+            loadQuestions();
+        }
+
+        function loadQuestions() {
+            const mcqC = document.getElementById('mcq-container');
+            mcqs.forEach((m, i) => {
+                let opts = m.opts.map((o, idx) => `<button onclick="check(this,${idx},${m.c})" class="option-btn">${o}</button>`).join('');
+                mcqC.innerHTML += `<div class="question-box"><p class="font-bold mb-3">${i+1}. ${m.q}</p>${opts}</div>`;
+            });
+
+            const tfC = document.getElementById('tf-container');
+            tfs.forEach((t, i) => {
+                tfC.innerHTML += `<div class="question-box"><p class="font-bold mb-3">${i+1}. ${t.q}</p><div class="flex gap-4">
+                    <button onclick="check(this,0,${t.c})" class="option-btn !w-24 text-center">صح</button>
+                    <button onclick="check(this,1,${t.c})" class="option-btn !w-24 text-center">خطأ</button>
+                </div></div>`;
+            });
+        }
+
+        function check(btn, selected, correct) {
+            const parent = btn.parentElement.closest('.question-box');
+            if (parent.classList.contains('done')) return;
+            parent.classList.add('done');
+            if (selected === correct) {
+                btn.classList.add('correct');
+                score += 10;
+            } else {
+                btn.classList.add('wrong');
+                parent.querySelectorAll('.option-btn')[correct].classList.add('correct');
+            }
+            document.getElementById('live-score').innerText = score;
+        }
+
+        function finishExam() {
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('result-screen').style.display = 'flex';
+        }
+    </script>
+</body>
+</html>
